@@ -17,7 +17,8 @@ services:
     env_file: 
       - .env  # Explicitly load environment variables from the .env file
     environment:
-      DB_HOST: ${DB_HOST}  # Override DB_HOST to use the service name in Docker network
+      LOCAL_DB_HOST: mysql_db
+      LOCAL_DB_PORT: 3306  # Override DB_HOST to use the service name in Docker network
     depends_on:
       mysql_db:
         condition: service_healthy

@@ -7,6 +7,23 @@ from sqlalchemy import create_engine
 from dotenv import load_dotenv
 from datetime import datetime
 
+import time
+from sqlalchemy.exc import OperationalError
+
+def wait_for_db(engine, max_retries=5, delay=5):
+    for attempt in range(max_retries):
+        try:
+            with engine.connect() as connection:
+                print(f"Successfully connected to database on attempt {attempt + 1}")
+                return True
+        except OperationalError as e:
+            if attempt < max_retries - 1:
+                print(f"Database connection attempt {attempt + 1} failed. Retrying in {delay} seconds...")
+                time.sleep(delay)
+            else:
+                raise e
+    return False
+
 try:
     # Load environment variables
     load_dotenv()
@@ -51,6 +68,12 @@ try:
     try:
         source_engine = create_engine(db_url)
         local_engine = create_engine(local_db_url)
+
+        # Wait for databases to be ready
+        print("Waiting for source database connection...")
+        wait_for_db(source_engine)
+        print("Waiting for local database connection...")
+        wait_for_db(local_engine)
     except Exception as e:
         raise Exception(f"Error creating database engines: {e}")
 
